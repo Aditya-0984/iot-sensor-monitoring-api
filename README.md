@@ -154,4 +154,3 @@ ERD Mermaid ada di `docs/erd.md`.
 - Flask-SQLAlchemy: https://flask-sqlalchemy.palletsprojects.com/
 - Flask-Migrate: https://flask-migrate.readthedocs.io/
 - SQLAlchemy: https://docs.sqlalchemy.org/
-- Pytest: https://docs.pytest.org/
