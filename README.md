@@ -148,12 +148,10 @@ ERD Mermaid ada di `docs/erd.md`.
 5. Optimasi query, indeks, retensi data, dan ekspor laporan.
 6. Deployment HTTPS, logging, backup, serta secret management.
 
-## 12. Referensi dan penggunaan AI
+## 12. Referensi
 
 - Flask: https://flask.palletsprojects.com/
 - Flask-SQLAlchemy: https://flask-sqlalchemy.palletsprojects.com/
 - Flask-Migrate: https://flask-migrate.readthedocs.io/
 - SQLAlchemy: https://docs.sqlalchemy.org/
 - Pytest: https://docs.pytest.org/
-
-Bantuan AI digunakan untuk menyusun kerangka kode dan dokumentasi awal. Mahasiswa perlu membaca, menguji, memahami, dan menyesuaikan proyek serta mencatat penggunaan AI sesuai petunjuk UTS.
