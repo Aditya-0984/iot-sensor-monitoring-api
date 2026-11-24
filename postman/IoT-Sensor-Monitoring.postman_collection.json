@@ -1,0 +1,180 @@
+{
+  "info": {
+    "_postman_id": "a7d094b1-8b01-4b23-b234-9a1cbcc4a021",
+    "name": "IoT Sensor Monitoring API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Koleksi pengujian lokal untuk MVP UTS."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:5000"
+    },
+    {
+      "key": "deviceKey",
+      "value": "demo-iot-key-123"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List sites",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/sites"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create site",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/sites"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Gedung A\",\n  \"location\": \"Yogyakarta\",\n  \"description\": \"Ruang server\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List devices",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/devices"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List sensors",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/sensors"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send normal temperature reading",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Device-Key",
+            "value": "{{deviceKey}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/readings"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sensor_id\": 1,\n  \"value\": 27.5\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send high temperature (creates alert)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-Device-Key",
+            "value": "{{deviceKey}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/readings"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sensor_id\": 1,\n  \"value\": 35\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List readings with pagination",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/readings?page=1&per_page=10&sort=desc"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List alerts",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/alerts"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List maintenance logs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/maintenance-logs"
+        }
+      },
+      "response": []
+    }
+  ]
+}

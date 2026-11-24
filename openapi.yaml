@@ -1,0 +1,271 @@
+openapi: 3.0.3
+info:
+  title: IoT Sensor Monitoring API
+  version: 1.0.0
+  description: REST API untuk registrasi lokasi/perangkat/sensor, ingest telemetri, alert ambang batas, dan log pemeliharaan.
+servers:
+  - url: http://127.0.0.1:5000
+paths:
+  /api/health:
+    get:
+      summary: Status API
+      responses:
+        '200':
+          description: API aktif
+  /api/sites:
+    get:
+      summary: Daftar lokasi
+      responses:
+        '200': { description: Daftar site }
+    post:
+      summary: Membuat lokasi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, location]
+              properties:
+                name: { type: string, example: Gedung A }
+                location: { type: string, example: Yogyakarta }
+                description: { type: string, example: Ruang server }
+      responses:
+        '201': { description: Site dibuat }
+        '400': { description: Validasi gagal }
+  /api/sites/{site_id}:
+    parameters:
+      - in: path
+        name: site_id
+        required: true
+        schema: { type: integer }
+    get:
+      summary: Detail lokasi
+      responses:
+        '200': { description: Detail site }
+        '404': { description: Tidak ditemukan }
+    put:
+      summary: Memperbarui lokasi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, properties: { name: {type: string}, location: {type: string}, description: {type: string} } }
+      responses:
+        '200': { description: Site diperbarui }
+    delete:
+      summary: Menghapus lokasi dan data turunannya
+      responses:
+        '200': { description: Site dihapus }
+  /api/devices:
+    get:
+      summary: Daftar perangkat; mendukung filter site_id
+      responses:
+        '200': { description: Daftar perangkat }
+    post:
+      summary: Registrasi perangkat
+      description: API key disimpan sebagai hash dan tidak pernah dikembalikan oleh API.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [site_id, name, device_code, api_key]
+              properties:
+                site_id: { type: integer }
+                name: { type: string }
+                device_code: { type: string }
+                api_key: { type: string }
+                status: { type: string, enum: [online, offline, maintenance] }
+      responses:
+        '201': { description: Perangkat dibuat }
+        '409': { description: Kode perangkat duplikat }
+  /api/devices/{device_id}:
+    parameters:
+      - in: path
+        name: device_id
+        required: true
+        schema: { type: integer }
+    get:
+      summary: Detail perangkat
+      responses:
+        '200': { description: Detail perangkat }
+        '404': { description: Tidak ditemukan }
+    put:
+      summary: Memperbarui perangkat
+      responses:
+        '200': { description: Perangkat diperbarui }
+    delete:
+      summary: Menghapus perangkat
+      responses:
+        '200': { description: Perangkat dihapus }
+  /api/sensors:
+    get:
+      summary: Daftar sensor; mendukung filter device_id
+      responses:
+        '200': { description: Daftar sensor }
+    post:
+      summary: Mendaftarkan sensor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_id, name, sensor_type, unit]
+              properties:
+                device_id: { type: integer }
+                name: { type: string }
+                sensor_type: { type: string }
+                unit: { type: string }
+                min_threshold: { type: number, nullable: true }
+                max_threshold: { type: number, nullable: true }
+      responses:
+        '201': { description: Sensor dibuat }
+        '400': { description: Validasi gagal }
+  /api/sensors/{sensor_id}:
+    parameters:
+      - in: path
+        name: sensor_id
+        required: true
+        schema: { type: integer }
+    get:
+      summary: Detail sensor
+      responses:
+        '200': { description: Detail sensor }
+    put:
+      summary: Memperbarui sensor dan ambang batas
+      responses:
+        '200': { description: Sensor diperbarui }
+    delete:
+      summary: Menghapus sensor
+      responses:
+        '200': { description: Sensor dihapus }
+  /api/readings:
+    post:
+      summary: Mengirim data telemetri
+      security: [{ DeviceApiKey: [] }]
+      parameters:
+        - in: header
+          name: X-Device-Key
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sensor_id, value]
+              properties:
+                sensor_id: { type: integer, example: 1 }
+                value: { type: number, example: 27.5 }
+                recorded_at: { type: string, format: date-time }
+      responses:
+        '201': { description: Reading tersimpan; alert dibuat jika nilai di luar ambang }
+        '401': { description: API key tidak valid }
+        '400': { description: Validasi gagal }
+    get:
+      summary: Daftar telemetri
+      parameters:
+        - in: query
+          name: sensor_id
+          schema: { type: integer }
+        - in: query
+          name: device_id
+          schema: { type: integer }
+        - in: query
+          name: start
+          schema: { type: string, format: date-time }
+        - in: query
+          name: end
+          schema: { type: string, format: date-time }
+        - in: query
+          name: sort
+          schema: { type: string, enum: [asc, desc], default: desc }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 20, maximum: 100 }
+      responses:
+        '200': { description: Data reading dan metadata pagination }
+  /api/readings/{reading_id}:
+    get:
+      summary: Detail pembacaan
+      parameters:
+        - in: path
+          name: reading_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Detail reading }
+        '404': { description: Tidak ditemukan }
+  /api/alerts:
+    get:
+      summary: Daftar alert; mendukung filter status, severity, device_id, dan pagination
+      responses:
+        '200': { description: Daftar alert }
+  /api/alerts/{alert_id}:
+    get:
+      summary: Detail alert
+      parameters:
+        - in: path
+          name: alert_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Detail alert }
+    patch:
+      summary: Mengubah status alert
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [open, acknowledged, resolved] }
+      responses:
+        '200': { description: Alert diperbarui }
+  /api/maintenance-logs:
+    get:
+      summary: Daftar riwayat pemeliharaan; mendukung filter device_id
+      responses:
+        '200': { description: Daftar log pemeliharaan }
+    post:
+      summary: Menambahkan log pemeliharaan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_id, technician, action]
+              properties:
+                device_id: { type: integer }
+                technician: { type: string }
+                action: { type: string }
+                notes: { type: string }
+                performed_at: { type: string, format: date-time }
+      responses:
+        '201': { description: Log dibuat }
+  /api/maintenance-logs/{log_id}:
+    get:
+      summary: Detail log pemeliharaan
+      parameters:
+        - in: path
+          name: log_id
+          required: true
+          schema: { type: integer }
+      responses:
+        '200': { description: Detail log }
+components:
+  securitySchemes:
+    DeviceApiKey:
+      type: apiKey
+      in: header
+      name: X-Device-Key
